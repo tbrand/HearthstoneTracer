@@ -1,31 +1,53 @@
 <template>
   <div class="home">
-    <div class="data-box">
-      <MyBar :data="barData" :options="barOptions"/>
+    <div class="title">
+      Big Demon Hunter
     </div>
-    <div class="data-box">
-      <MyPie :data="pieData" :options="pieOptions"/>
+    <div class="win-ratio-wrap">
+      <WinRatio v-for="hero in heroes" :hero="hero" :numOfWinLoose="numOfWinLoose(hero.id)"/>
     </div>
+
+    <NumOfPlays class="num-of-plays" :num-of-plays="numOfPlays"/>
+    <!--
     <div class="data-box">
       <MyLine :data="lineData" :options="lineOptions"/>
     </div>
+    -->
   </div>
 </template>
 
 <script>
-import MyBar from '@/components/MyBar.vue';
-import MyPie from '@/components/MyPie.vue';
-import MyLine from '@/components/MyLine.vue';
+import NumOfPlays from '@/components/NumOfPlays.vue';
+import WinRatio from '@/components/WinRatio.vue';
+import Heroes from '@/heroes';
+import { extractDeck, countPlays, countWinLoose } from '@/analyzer';
+import DummyData from '@/dummyData';
+
+const dummyDeckId = 'yyy';
 
 export default {
   name: 'Home',
   components: {
-    MyBar,
-    MyPie,
-    MyLine,
+    NumOfPlays,
+    WinRatio,
+  },
+  computed: {
+    myDeckData: function () {
+      return extractDeck(DummyData, dummyDeckId);
+    },
+    numOfPlays: function () {
+      return Heroes.map(h => countPlays(this.myDeckData, h.id));
+    },
+  },
+  methods: {
+    numOfWinLoose: function (heroId) {
+      return countWinLoose(this.myDeckData, heroId);
+    },
   },
   data () {
     return {
+      heroes: Heroes,
+      winRatioHero: Heroes[0],
       pieData: {
         labels: ['Win', 'Loose'],
         datasets: [
@@ -37,27 +59,6 @@ export default {
         ],
       },
       pieOptions: {
-      },
-      barData: {
-        labels: ['Demon Hunter', 'Druid', 'Hunter', 'Mage', 'Paladin', 'Priest', 'Rogue', 'Shaman', 'Warlock', 'Warrior'],
-        datasets: [
-          {
-            label: 'Number of plays',
-            backgroundColor: '#0f0',
-            data: [40, 30, 10, 5, 3, 19, 4, 3, 6, 31],
-          },
-        ],
-      },
-      barOptions: {
-        scales: {
-          yAxes: [
-            {
-              ticks: {
-                min: 0,
-              },
-            },
-          ],
-        },
       },
       lineData: {
         labels: ['Demon Hunter', 'Druid', 'Hunter', 'Mage', 'Paladin', 'Priest'],
@@ -83,6 +84,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+ .win-ratio-wrap {
+   width: 100%;
+   height: auto;
+
+   display: flex;
+   flex-direction: row;
+ }
+
+ .num-of-plays {
+   width: 800px;
+   height: 200px;
+ }
+
  .data-box {
    width: 400px;
    height: 400px;
